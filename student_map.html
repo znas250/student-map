@@ -77,8 +77,8 @@ document.getElementById('pwInput').addEventListener('keydown',function(e){if(e.k
 <div class="sb">
   <div class="smb" id="sm"></div>
   <div class="fg"><h3>학생구분 필터 <span class="sa" onclick="tAT()">전체</span></h3><div id="tf"></div></div>
-  <div class="dv"></div>
-  <div class="fg"><h3>국적 필터 (외국인) <span class="sa" onclick="tAN()">전체</span></h3><div class="nf" id="nf"></div></div>
+  <div class="dv" id="natDv"></div>
+  <div class="fg" id="natSection"><h3>국적 필터 (외국인) <span class="sa" onclick="tAN()">전체</span></h3><div class="nf" id="nf"></div></div>
 </div>
 
 <script>
@@ -242,7 +242,7 @@ function render(){
     markers.push(m);
   });
 
-  clusterer=new kakao.maps.MarkerClusterer({map:mp,markers:markers,gridSize:60,minLevel:1,disableClickZoom:false,averageCenter:true,
+  clusterer=new kakao.maps.MarkerClusterer({map:mp,markers:markers,gridSize:60,minLevel:1,disableClickZoom:true,averageCenter:true,
     minClusterSize:2,
     calculator:[5,20,50,100],
     styles:[
@@ -253,10 +253,44 @@ function render(){
       {width:'80px',height:'80px',background:'rgba(26,115,232,.95)',borderRadius:'50%',color:'#fff',textAlign:'center',fontWeight:'700',lineHeight:'80px',fontSize:'16px'}
     ]
   });
+  // When a cluster is clicked, check if all markers are at the same postal code
+  // If so, show student list popup; otherwise zoom in
+  kakao.maps.event.addListener(clusterer,'clusterclick',function(cluster){
+    var cms=cluster.getMarkers();
+    var level=mp.getLevel();
+    // Collect all students from markers in this cluster
+    var clusterStudents=[];
+    var seenPc={};
+    cms.forEach(function(m){
+      var pos=m.getPosition();
+      // Find matching students by lat/lng
+      v.forEach(function(s){
+        if(!s.y)return;
+        if(Math.abs(s.y-pos.getLat())<0.0001&&Math.abs(s.x-pos.getLng())<0.0001){
+          var key=s.p+'_'+s.n;
+          if(!seenPc[key]){seenPc[key]=true;clusterStudents.push(s)}
+        }
+      });
+    });
+    // If zoomed in enough (level<=3) or all same postal code, show popup
+    var allSamePc=clusterStudents.length>0&&clusterStudents.every(function(s){return s.p===clusterStudents[0].p});
+    if(allSamePc||level<=3){
+      iw.setContent(makeGroupContent(clusterStudents));
+      iw.setPosition(cluster.getCenter());
+      iw.open(mp);
+    } else {
+      mp.setLevel(level-2,{anchor:cluster.getCenter()});
+    }
+  });
   uS();uH();
 }
 
-function uS(){var v=vis(),tc={};v.forEach(function(s){tc[s.t]=(tc[s.t]||0)+1});var h='<div class="sr"><span>표시 학생</span><span class="v">'+v.length.toLocaleString()+'명</span></div>';['외국인','학령기','성인','위탁'].forEach(function(t){if(tc[t])h+='<div class="sr"><span style="color:'+TC[t]+'">'+t+'</span><span class="v">'+tc[t].toLocaleString()+'</span></div>'});document.getElementById('sm').innerHTML=h}
+function uS(){var v=vis(),tc={};v.forEach(function(s){tc[s.t]=(tc[s.t]||0)+1});var h='<div class="sr"><span>표시 학생</span><span class="v">'+v.length.toLocaleString()+'명</span></div>';['외국인','학령기','성인','위탁'].forEach(function(t){if(tc[t])h+='<div class="sr"><span style="color:'+TC[t]+'">'+t+'</span><span class="v">'+tc[t].toLocaleString()+'</span></div>'});document.getElementById('sm').innerHTML=h;
+  // Show/hide nationality filter based on 외국인 toggle
+  var showNat=aT.has('외국인');
+  document.getElementById('natSection').style.display=showNat?'':'none';
+  document.getElementById('natDv').style.display=showNat?'':'none';
+}
 function uH(){var v=vis();document.getElementById('hs').textContent='전체 '+S.length.toLocaleString()+'명 중 '+v.length.toLocaleString()+'명 표시'}
 
 function buildUI(){
