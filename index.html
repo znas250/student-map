@@ -12,10 +12,10 @@ body{font-family:'Malgun Gothic','Segoe UI',sans-serif;background:#f5f5f5}
 .hd h1{font-size:16px;font-weight:600}
 .hd .st{font-size:12px;opacity:.85}
 .sb{position:absolute;top:62px;left:10px;z-index:10;background:#fff;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.12);width:260px;max-height:calc(100vh - 76px);overflow:hidden;transition:all .3s}
-.sb.collapsed{width:40px;max-height:40px;border-radius:20px;cursor:pointer;overflow:hidden}
+.sb.collapsed{width:auto;max-height:40px;border-radius:20px;cursor:pointer;overflow:hidden}
 .sb.collapsed .sb-body{display:none}
 .sb-toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;background:#1e3a5f;color:#fff;border-radius:10px 10px 0 0;font-size:13px;font-weight:600}
-.sb.collapsed .sb-toggle{border-radius:20px;justify-content:center;padding:10px}
+.sb.collapsed .sb-toggle{border-radius:20px;justify-content:center;padding:8px 16px;gap:6px}
 .sb-toggle .arrow{font-size:16px;transition:transform .3s}
 .sb.collapsed .sb-toggle .arrow{transform:rotate(180deg)}
 .sb-body{padding:14px;overflow-y:auto;max-height:calc(100vh - 120px)}
